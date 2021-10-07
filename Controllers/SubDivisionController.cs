@@ -234,7 +234,7 @@ namespace WebApiCountries.Controllers
 		[HttpPost]
 		[Authorize]
 		[Route("InsertSubDivisionListByCountry")]
-		public async Task<ActionResult<IEnumerable<Countries>>> InsertSubDivisionListByCountry(SubDivision subDivision)
+		public async Task<ActionResult<IEnumerable<SubDivision>>> InsertSubDivisionListByCountry(SubDivision subDivision)
 		{
 
 			try
