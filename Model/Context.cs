@@ -28,11 +28,11 @@ namespace WebApiCountries.Model
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            //if (!optionsBuilder.IsConfigured)
-            //{
-            //    optionsBuilder.UseSqlServer("Data Source=PCM-78523Z2\\SQLEXPRESS;Initial Catalog=DBCountries;User ID=Gregor;Password=Greg576&; MultipleActiveResultSets=True;Connect Timeout=100;Encrypt=False;");
-            //}
-        }
+			if (!optionsBuilder.IsConfigured)
+			{
+				optionsBuilder.UseSqlServer("Data Source=PCM-78523Z2\\SQLEXPRESS;Initial Catalog=DBCountries;User ID=Gregor;Password=Greg576&; MultipleActiveResultSets=True;Connect Timeout=100;Encrypt=False;");
+			}
+		}
 
 
     }

@@ -83,19 +83,12 @@ namespace WebApiCountries.Controllers
 					Name = Convert.ToInt16(CountryId);
 				}
 
-				var ListaCountries = _db.subDivision.Where(x => x.CountryId == Name).Count();
 
-				if (ListaCountries == 0)
-				{
-					return Ok("Zero");
-				}
-				else
-				{
 
 					var ListsubDivision = _db.subDivision.Where(x => x.CountryId == Convert.ToInt16(CountryId)).ToList();
 
 					return Ok(ListsubDivision);
-				}
+				
 
 			}
 			catch (Exception ex)

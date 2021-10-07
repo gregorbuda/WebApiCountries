@@ -261,10 +261,11 @@ namespace WebApiCountries.Controllers
 					}
 					else
 					{
+						var SubDivision = await _db.subDivision.Where(x => x.CountryId == countries.CountryId).FirstOrDefaultAsync();
 
-						var SubDiv = await _db.subDivision.FindAsync(countries.CountryId);
+						var SubDiv = _db.subDivision.FindAsync(SubDivision.CountryId);
 
-						_db.subDivision.Remove(SubDiv);
+						_db.subDivision.Remove(SubDivision);
 					
 						_db.countries.Remove(Country);
 

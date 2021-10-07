@@ -10,8 +10,8 @@ using WebApiCountries.Model;
 namespace WebApiCountries.Migrations
 {
     [DbContext(typeof(CountriesDbContext))]
-    [Migration("20211005140908_InsertSub")]
-    partial class InsertSub
+    [Migration("20211007135732_Nueva")]
+    partial class Nueva
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
