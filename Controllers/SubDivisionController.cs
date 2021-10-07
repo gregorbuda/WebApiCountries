@@ -27,28 +27,33 @@ namespace WebApiCountries.Controllers
 
 		[HttpGet]
 		[Authorize]
-		[Route("GetSubDivisionListByCountry")]
-		public async Task<ActionResult<IEnumerable<Countries>>> GetSubDivisionListByCountry(string Country)
+		[Route("GetSubDivisionListByCountryCount")]
+		public async Task<ActionResult<IEnumerable<SubDivision>>> GetSubDivisionListByCountryCount(string CountryId)
 		{
 			try
 			{
-				//CountriesDbContext db = new CountriesDbContext();
-
-				var ListaCountries = _db.countries.Where(x => x.NameCountry == Country.Trim()).Count();
-
-				if (ListaCountries == 0)
+				Int16 Name;
+				if(String.IsNullOrEmpty(CountryId))
 				{
-					return Ok(System.Net.HttpStatusCode.NotFound);
+					Name = 0;
 				}
 				else
 				{
-					var Countries = await _db.countries.Where(x => x.NameCountry == Country.Trim()).FirstOrDefaultAsync();
+					Name = Convert.ToInt16(CountryId);
+				}
 
-					Int16 CountryId = Countries.CountryId;
+				var ListaCountries = _db.subDivision.Where(x => x.CountryId == Name).Count();
 
-					var CountsubDivision = _db.subDivision.Where(x => x.CountryId == CountryId).Count();
+				if (ListaCountries == 0)
+				{
+					return Ok("Zero");
+				}
+				else
+				{
 
-					var ListsubDivision = _db.subDivision.Where(x => x.CountryId == CountryId).ToList();
+					var CountsubDivision = _db.subDivision.Where(x => x.CountryId == Convert.ToInt16(CountryId)).Count();
+
+					var ListsubDivision = _db.subDivision.Where(x => x.CountryId == Convert.ToInt16(CountryId)).ToList();
 
 					return Ok(new { data = ListsubDivision, count = CountsubDivision });
 				}
@@ -61,42 +66,36 @@ namespace WebApiCountries.Controllers
 			}
 		}
 
-		[HttpPost]
+		[HttpGet]
 		[Authorize]
-		[Route("InsertSubDivisionListByCountry")]
-		public async Task<ActionResult<IEnumerable<Countries>>> InsertSubDivisionListByCountry(string NameCountry, string NameSubDivision, string CodeSubDivision)
+		[Route("GetSubDivisionListByCountry")]
+		public async Task<ActionResult<IEnumerable<SubDivision>>> GetSubDivisionListByCountry(string CountryId)
 		{
 			try
 			{
-				//CountriesDbContext db = new CountriesDbContext();
-
-				var ListaCountries = _db.countries.Where(x => x.NameCountry == NameCountry.Trim()).Count();
-
-				if (ListaCountries == 0)
+				Int16 Name;
+				if (String.IsNullOrEmpty(CountryId))
 				{
-					return Ok(System.Net.HttpStatusCode.NotFound);
+					Name = 0;
 				}
 				else
 				{
-					var Countries = await _db.countries.Where(x => x.NameCountry == NameCountry.Trim()).FirstOrDefaultAsync();
-
-					Int16 CountryId = Countries.CountryId;
-
-					SubDivision subDivision = new SubDivision();
-
-					subDivision.CodeSubDivision = CodeSubDivision;
-
-					subDivision.NameSubDivision = NameSubDivision;
-
-					subDivision.CountryId = CountryId;
-
-					_db.subDivision.Add(subDivision);
-
-					_db.SaveChangesAsync();
-
-					return Ok("Correct");
+					Name = Convert.ToInt16(CountryId);
 				}
 
+				var ListaCountries = _db.subDivision.Where(x => x.CountryId == Name).Count();
+
+				if (ListaCountries == 0)
+				{
+					return Ok("Zero");
+				}
+				else
+				{
+
+					var ListsubDivision = _db.subDivision.Where(x => x.CountryId == Convert.ToInt16(CountryId)).ToList();
+
+					return Ok(ListsubDivision);
+				}
 
 			}
 			catch (Exception ex)
@@ -105,15 +104,15 @@ namespace WebApiCountries.Controllers
 			}
 		}
 
+
+
 		[HttpPut]
 		[Authorize]
 		[Route("UpdateSubDivisionListByCountry")]
-		public async Task<ActionResult<IEnumerable<Countries>>> UpdateSubDivisionListByCountry(Sub sub)
+		public async Task<ActionResult<IEnumerable<SubDivision>>> UpdateSubDivisionListByCountry(Sub sub)
 		{
 			try
 			{
-				//CountriesDbContext db = new CountriesDbContext();
-
 				string CountryId = sub.CountryId.ToString();
 				bool allDigitsFirts = CountryId.All(char.IsDigit);
 
@@ -124,7 +123,7 @@ namespace WebApiCountries.Controllers
 
 					if (sub.CountryId == 0)
 					{
-						return Ok("No Country");
+						return Ok("Invalid");
 					}
 					else
 					{
@@ -138,7 +137,7 @@ namespace WebApiCountries.Controllers
 
 							if (ListaSubDivision == null)
 							{
-								return Ok("No Subdivision");
+								return Ok("Invalid");
 							}
 							else
 							{
@@ -146,9 +145,16 @@ namespace WebApiCountries.Controllers
 								ListaSubDivision.CodeSubDivision = sub.CodeSubDivision ?? ListaSubDivision.CodeSubDivision;
 								ListaSubDivision.NameSubDivision = sub.NameSubDivision ?? ListaSubDivision.NameSubDivision;
 
-								_db.SaveChangesAsync();
+								var resultado = await _db.SaveChangesAsync();
 
-								return Ok("Correct");
+								if (resultado > 0)
+								{
+									return Ok("Correct");
+								}
+								else
+								{
+									return Ok("Invalid");
+								}
 							}
 						}
 						else
@@ -172,30 +178,30 @@ namespace WebApiCountries.Controllers
 		[HttpDelete]
 		[Authorize]
 		[Route("DeleteSubDivisionListByCountry")]
-		public async Task<ActionResult<IEnumerable<Countries>>> DeleteSubDivisionListByCountry(string NameCountry, string NameSubDivision)
+		public async Task<ActionResult<IEnumerable<SubDivision>>> DeleteSubDivisionListByCountry(SubDivision subDivision)
 		{
 			try
 			{
 				// db = new CountriesDbContext();
 
-				var ListaCountries = _db.countries.Where(x => x.NameCountry == NameCountry.Trim()).Count();
+				var ListaCountries = _db.countries.Where(x => x.CountryId == subDivision.CountryId).Count();
 
 				if (ListaCountries == 0)
 				{
-					return Ok("No Country");
+					return Ok("Invalid");
 				}
 				else
 				{
-					var ListaSubDivision = _db.subDivision.Where(x => x.NameSubDivision == NameSubDivision.Trim()).Count();
+					var ListaSubDivision = _db.subDivision.Where(x => x.SubDivisionId == subDivision.SubDivisionId).Count();
 
 					if (ListaSubDivision == 0)
 					{
-						return Ok("No Subdivision");
+						return Ok("Invalid");
 					}
 					else
 					{
 
-						var SubDivision = await _db.subDivision.Where(x => x.NameSubDivision == NameSubDivision.Trim()).FirstOrDefaultAsync();
+						var SubDivision = await _db.subDivision.Where(x => x.SubDivisionId == subDivision.SubDivisionId).FirstOrDefaultAsync();
 
 						Int16 SubDivisionId = SubDivision.SubDivisionId;
 
@@ -203,17 +209,77 @@ namespace WebApiCountries.Controllers
 
 						_db.subDivision.Remove(SubDiv);
 
-						_db.SaveChangesAsync();
+						var resultado = await _db.SaveChangesAsync();
 
-						return Ok("Correct");
+						if (resultado > 0)
+						{
+							return Ok("Correct");
+						}
+						else
+						{
+							return Ok("Invalid");
+						}
 					}
 				}
 
 			}
 			catch (Exception ex)
 			{
+				return Ok("Invalid");
+			}
+		}
+
+
+
+		[HttpPost]
+		[Authorize]
+		[Route("InsertSubDivisionListByCountry")]
+		public async Task<ActionResult<IEnumerable<Countries>>> InsertSubDivisionListByCountry(SubDivision subDivision)
+		{
+
+			try
+			{
+				if (subDivision.CodeSubDivision == "" || subDivision.NameSubDivision == "")
+				{
+					return Ok("Invalid");
+				}
+				else
+				{
+					var Subdi = _db.subDivision.Where(x => x.NameSubDivision == subDivision.NameSubDivision.Trim()).Count();
+
+					if (Subdi == 0)
+					{
+						_db.subDivision.Add(subDivision);
+
+						var resultado = await _db.SaveChangesAsync();
+
+						if (resultado > 0)
+						{
+							return Ok("Correct");
+						}
+						else
+						{
+							return Ok("Invalid");
+						}
+					}
+					else
+					{
+						return Ok("Invalid");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
 				return Ok("Invalido");
 			}
 		}
-	}
+	
+
+
+
+
+
+
+
+}
 }

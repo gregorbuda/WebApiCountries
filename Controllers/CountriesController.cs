@@ -10,7 +10,9 @@ using System.Text;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Threading.Tasks;
 using WebApiCountries.Model;
-
+using MediatR;
+using System.Net;
+using System.Threading;
 
 namespace WebApiCountries.Controllers
 {
@@ -25,6 +27,19 @@ namespace WebApiCountries.Controllers
 		{
 			_db = db;
 		}
+
+		public class ErrorHandler : Exception
+		{
+			public HttpStatusCode Codigo { get; set; }
+			public object Error { get; set; }
+
+			public ErrorHandler(HttpStatusCode Code, object Err)
+			{
+				this.Codigo = Code;
+				this.Error = Err;
+			}
+		}
+
 
 		private string GenerateJWT()
 		{
@@ -123,7 +138,6 @@ namespace WebApiCountries.Controllers
 			try
 			{
 
-
 				var CountCountries = _db.countries.Where(x => x.NameCountry == nameCountry).Count();
 
 				var ListCountries = _db.countries.Where(x => x.NameCountry == nameCountry).ToList();
@@ -141,16 +155,13 @@ namespace WebApiCountries.Controllers
 		[HttpPost]
 		[Authorize]
 		[Route("InsertCountries")]
-		public IActionResult InsertCountries(Countries countries)
+		public async Task<ActionResult<IEnumerable<Countries>>> InsertCountries(Countries countries)
 		{
-
 			try
 			{
-				//CountriesDbContext db = new CountriesDbContext();
-
 				if (countries.NameCountry == "" || countries.AlphaOneCountry == "" || countries.AlphaTwoCountry == "" || countries.NumericCode == "")
 				{
-					return Ok("Data Requeried");
+					return Ok("Invalid");
 				}
 				else
 				{
@@ -160,13 +171,20 @@ namespace WebApiCountries.Controllers
 					{
 						_db.countries.Add(countries);
 
-						_db.SaveChangesAsync();
+						var resultado = await _db.SaveChangesAsync();
 
-						return Ok("Correct");
+						if (resultado > 0)
+						{
+							return Ok("Correct");
+						}
+						else
+						{
+							return Ok("Invalid");
+						}
 					}
 					else
 					{
-						return Ok("Exist");
+						return Ok("Invalid");
 					}
 				}
 			}
@@ -179,24 +197,23 @@ namespace WebApiCountries.Controllers
 		[HttpPut]
 		[Authorize]
 		[Route("UpdateCountries")]
-		public IActionResult UpdateCountries(Countries countries)
+		public async Task<ActionResult<IEnumerable<Countries>>> UpdateCountries(Countries countries)
 		{
 
 			try
 			{
-				//CountriesDbContext db = new CountriesDbContext();
 
 				if (countries.NameCountry == "" || countries.AlphaOneCountry == "" || countries.AlphaTwoCountry == "" || countries.NumericCode == "")
 				{
-					return Ok("Data Requeried");
+					return Ok("Invalid");
 				}
 				else
 				{
-					var Country = _db.countries.Find(countries.CountryId);
+					var Country =  await _db.countries.FindAsync(countries.CountryId);
 
 					if (Country == null)
 					{
-						return Ok(System.Net.HttpStatusCode.NotFound);
+						return Ok("Invalid");
 					}
 					else
 					{
@@ -207,29 +224,36 @@ namespace WebApiCountries.Controllers
 						Country.NumericCode = countries.NumericCode ?? Country.NumericCode;
 						Country.Independent = countries.Independent;
 
-						_db.SaveChangesAsync();
+						var resultado = await _db.SaveChangesAsync();
 
-						return Ok("Correct");
+						if (resultado > 0)
+						{
+							return Ok("Correct");
+						}
+						else
+						{
+							return Ok("Invalid");
+						}
 					}
 				}
 			}
 			catch (Exception ex)
 			{
-				return Ok("Invalido");
+				return Ok("Invalid");
 			}
 		}
 
 		[HttpDelete]
 		[Authorize]
 		[Route("DeleteCountries")]
-		public IActionResult DeleteCountries(Countries countries)
+		public async Task<ActionResult<IEnumerable<Countries>>> DeleteCountries(Countries countries)
 		{
 
 			try
 			{
 				//CountriesDbContext db = new CountriesDbContext();
 
-					var Country = _db.countries.Find(countries.CountryId);
+					var Country = await _db.countries.FindAsync(countries.CountryId);
 
 					if (Country == null)
 					{
@@ -238,15 +262,22 @@ namespace WebApiCountries.Controllers
 					else
 					{
 
-						var SubDiv = _db.subDivision.Find(countries.CountryId);
+						var SubDiv = await _db.subDivision.FindAsync(countries.CountryId);
 
 						_db.subDivision.Remove(SubDiv);
-
-						_db.countries.Remove(Country);
 					
-						_db.SaveChangesAsync();
+						_db.countries.Remove(Country);
 
-					return Ok("Correct");
+						var resultado = await _db.SaveChangesAsync();
+
+						if (resultado > 0)
+						{
+							return Ok("Correct");
+						}
+						else
+						{
+							return Ok("Invalid");
+						}
 					}
 				
 			}

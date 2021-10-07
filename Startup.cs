@@ -117,7 +117,13 @@ namespace WebApiCountries
 				options.AllowAnyHeader();
 
 			});
-			
+
+
+
+
+			app.UseCors(options => options.AllowAnyOrigin());
+
+
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
